@@ -1,8 +1,32 @@
 <?php
 
-// if (isset($_POST["submitButton"])) {
-//     echo "Form was submitted";
-// }
+
+require_once("includes/config.php");
+require_once("includes/classes/FormSanitizer.php");
+require_once("includes/classes/Constants.php");
+require_once("includes/classes/Account.php");
+
+$account = new Account($con);
+
+
+if (isset($_POST["submitButton"])) {
+
+    $username = FormSanitizer::sanitizerFormUsername($_POST["username"]);
+    $password = FormSanitizer::sanitizerFormPassword($_POST["password"]);
+
+    $success = $account->login($username, $password);
+    if ($success) {
+        $_SESSION["userLoggedIn"] = $username;
+        header('Location: index.php');
+    }
+}
+
+function getInputValue($name)
+{
+    if (isset($_POST[$name])) {
+        echo $_POST[$name];
+    }
+}
 
 ?>
 
@@ -51,14 +75,15 @@
                     <h3>Sign In</h3>
                 </div>
                 <form method="POST" action="">
+                    <?php echo $account->getError(Constants::$LoginFailed); ?>
                     <div class="form-group">
-                        <input type="text" class="form-control" id="UserName" placeholder="username" name="usertName" required>
+                        <input type="text" class="form-control" placeholder="username" name="username" value="<?php getInputValue("username") ?>" required>
                     </div>
                     <div class="form-group">
-                        <input type="password" class="form-control" id="pwd" placeholder="Confirm password" name="password" required>
+                        <input type="password" class="form-control" placeholder="password" name="password" required>
                     </div>
 
-                    <input type="submit" class="btn btn-default" name="submitButton" value="SUBMIT">
+                    <input type="submit" class="btn btn-default" name="submitButton" value="LOGIN">
                 </form>
                 <div class="signInMessage">
                     <p>Need an account? <a href="register.php">Sign up</a></p>

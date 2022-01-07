@@ -1,8 +1,35 @@
 <?php
+require_once("includes/config.php");
+require_once("includes/classes/FormSanitizer.php");
+require_once("includes/classes/Constants.php");
+require_once("includes/classes/Account.php");
 
-// if (isset($_POST["submitButton"])) {
-//     echo "Form was submitted";
-// }
+$account = new Account($con);
+
+if (isset($_POST["submitButton"])) {
+    $firstName = FormSanitizer::sanitizerFormString($_POST["firstName"]);
+    $lastName = FormSanitizer::sanitizerFormString($_POST["lastName"]);
+    $username = FormSanitizer::sanitizerFormUsername($_POST["username"]);
+    $email = FormSanitizer::sanitizerFormEmail($_POST["email"]);
+    $email2 = FormSanitizer::sanitizerFormEmail($_POST["email2"]);
+    $password = FormSanitizer::sanitizerFormPassword($_POST["password"]);
+    $password2 = FormSanitizer::sanitizerFormPassword($_POST["password2"]);
+
+    $success = $account->register($firstName, $lastName, $username, $email, $email2, $password, $password2);
+    if ($success) {
+        echo "call index";
+        // Store session
+        $_SESSION["userLoggedIn"] = $username;
+        header('Location: index.php');
+    }
+}
+
+function getInputValue($name)
+{
+    if (isset($_POST[$name])) {
+        echo $_POST[$name];
+    }
+}
 
 ?>
 
@@ -34,7 +61,7 @@
                         <span class="icon-bar"></span>
                     </button>
                     <div class="logo">
-                        <a class="navbar-brand" href="#"><img src="./assets/img/logo.png" alt=""></a>
+                        <a class="navbar-brand" href="login.php"><img src="./assets/img/logo.png" alt=""></a>
                     </div>
                 </div>
                 <div class="collapse navbar-collapse" id="myNavbar">
@@ -45,29 +72,41 @@
             </div>
         </nav>
 
-
         <div class="column">
             <div class="header">
                 <h3>Sign Up</h3>
             </div>
             <form method="POST" action="">
+
+                <?php echo $account->getError(Constants::$firstNameCharacters); ?>
                 <div class="form-group">
-                    <input type="text" class="form-control" id="firstName" placeholder="First name" name="firstName" required>
+                    <input type="text" class="form-control" value="<?php getInputValue("firstName") ?>" placeholder="First name" name="firstName" required>
+                </div>
+                <?php echo $account->getError(Constants::$lastNameCharacters); ?>
+                <div class="form-group">
+                    <input type="text" class="form-control" value="<?php getInputValue("lastName") ?>" placeholder="Last name" name="lastName" required>
+                </div>
+                <?php echo $account->getError(Constants::$usernameCharacters); ?>
+                <?php echo $account->getError(Constants::$usernameTaken); ?>
+                <div class="form-group">
+                    <input type="text" class="form-control" value="<?php getInputValue("username") ?>" placeholder="Username" name="username" required>
+                </div>
+                <?php echo $account->getError(Constants::$emailsDontMatch); ?>
+                <?php echo $account->getError(Constants::$emailInvalid); ?>
+                <?php echo $account->getError(Constants::$emailTaken); ?>
+                <div class="form-group">
+                    <input type="email" class="form-control" value="<?php getInputValue("email") ?>" placeholder="Enter email" name="email" required>
                 </div>
                 <div class="form-group">
-                    <input type="text" class="form-control" id="lastName" placeholder="Last name" name="lastName" required>
+                    <input type="email" class="form-control" value="<?php getInputValue("email2") ?>" placeholder="Confirm email" name="email2" required>
+                </div>
+                <?php echo $account->getError(Constants::$passwordsDontMatch); ?>
+                <?php echo $account->getError(Constants::$passwordLength); ?>
+                <div class="form-group">
+                    <input type="password" class="form-control" placeholder="Enter password" name="password" required>
                 </div>
                 <div class="form-group">
-                    <input type="email" class="form-control" id="email" placeholder="Enter email" name="email" required>
-                </div>
-                <div class="form-group">
-                    <input type="email" class="form-control" id="email" placeholder="Confirm email" name="email2" required>
-                </div>
-                <div class="form-group">
-                    <input type="password" class="form-control" id="pwd" placeholder="Enter password" name="password" required>
-                </div>
-                <div class="form-group">
-                    <input type="password" class="form-control" id="pwd" placeholder="Confirm password" name="password2" required>
+                    <input type="password" class="form-control" placeholder="Confirm password" name="password2" required>
                 </div>
 
                 <input type="submit" class="btn btn-default" name="submitButton" value="SUBMIT">
